@@ -6,7 +6,7 @@ services:
     container_name: shop_database
     image: postgres:14.5
     env_file:
-      - ./.env
+      - ./.dev.env
     restart: always
     healthcheck:
       test: pg_isready -q --username=$$POSTGRES_USER --dbname=$$POSTGRES_NAME
@@ -29,7 +29,7 @@ services:
         - rabbitmq_data:/var/lib/rabbitmq/
         - rabbitmq_log:/var/log/rabbitmq
     env_file:
-      - ./.env
+      - ./.dev.env
     healthcheck:
       test: rabbitmq-diagnostics -q ping
       interval: 30s
@@ -51,25 +51,25 @@ services:
   celery:
     container_name: shop_project_celery_worker
     build:
-      dockerfile: dockerfiles/Dockerfile
+      dockerfile: dockerfiles/Dockerfile_dev
       context: .
     command: worker
     env_file:
-      - ./.env
+      - ./.dev.env
 
   shop:
     container_name: shop_project_django
     build:
-      dockerfile: dockerfiles/Dockerfile
+      dockerfile: dockerfiles/Dockerfile_dev
       context: .
     command: server
     stdin_open: true
     ports:
       - "8000:8000"
     env_file:
-      - ./.env
+      - ./.dev.env
     volumes:
-      - ./:/code
+      - ./:/app
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -87,7 +87,7 @@ services:
   #   ports:
   #     - "84:84"
   #   env_file:
-  #     - ./.env
+  #     - ./.dev.env
 
 volumes:
   rabbitmq_data:

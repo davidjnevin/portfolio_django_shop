@@ -3,22 +3,13 @@
 set -e
 set -o nounset
 
-
-redis_ready() {
-    python << END
-import sys
-
-from redis import Redis
-from redis import RedisError
-
-
-try:
-    redis = Redis.from_url("${CELERY_BROKER_URL}", db=0)
-    redis.ping()
-except RedisError:
-    sys.exit(-1)
-END
-}
+# Load environment variables from .env file
+if [ -f ./.env ]; then
+  source ./.env
+else
+  echo "No .env file found. Exiting."
+  exit 1
+fi
 
 postgres_ready() {
     python << END
@@ -29,22 +20,32 @@ from psycopg2.errors import OperationalError
 
 try:
     connect(
-        dbname="myshop",
-        user="davidjnevin",
-        password="Password10!",
+        dbname="${POSTGRES_DB}",
+        user="${POSTGRES_USER}",
+        password="${POSTGRES_PASSWORD}",
     )
 except OperationalError:
     sys.exit(-1)
 END
 }
 
-wait_other_containers() {
-	until postgres_ready; do
-		>&2 echo "Waiting for PostgreSQL to become available..."
-		sleep 5
-	done
-	>&2 echo "PostgreSQL is available"
+redis_ready() {
+    python << END
+import sys
 
+from redis import Redis
+from redis import RedisError
+
+try:
+    redis = Redis.from_url("${CELERY_BROKER_URL}", db=0)
+    redis.ping()
+except RedisError:
+    sys.exit(-1)
+END
+}
+
+
+wait_other_containers() {
 	until redis_ready; do
 		>&2 echo "Waiting for Redis to become available..."
 		sleep 5
@@ -64,9 +65,9 @@ case $1 in
 	"bash")
 		bash;;
 	"makemigrations")
-		python3 manage.py makemigrations;;
-	"makemessages")
-		python3 manage.py makemessages;;
+		python3 manage.py makemigrations
+		python3 manage.py makemigrations shop --name "translations"
+		;;
 	"worker")
 		wait_other_containers ;\
 		django_operations ;\
@@ -78,10 +79,8 @@ case $1 in
 	"server")
 		wait_other_containers ;\
 		django_operations ;\
-		wait_other_containers ;\
-        django_operations ;\
-		wsgi --ini /app/config/uwsgi/uwsgi.ini:application
-                ;;
+		uwsgi config/uwsgi/uwsgi.ini
+		;;
 	"createsuperuser")
 		wait_other_containers ;\
 		django_operations ;\
@@ -107,4 +106,3 @@ case $1 in
 		exec "$@"
 		;;
 esac
-

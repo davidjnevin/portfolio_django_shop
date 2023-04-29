@@ -53,7 +53,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "myshop.wsgi.application"
 
 
 # Password validation

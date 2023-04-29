@@ -1,0 +1,23 @@
+# upstream for uWSGI
+
+server {
+    listen 84;
+    server_name shop_project_django:8000;
+    # server_name shop.project.davidnevin.net;
+    error_log stderr warn;
+    access_log /dev/stdout main;
+
+    location / {
+        include /etc/nginx/uwsgi_params;
+        uwsgi_pass shop_project_django:8000;
+    }
+
+    location /static/ {
+        alias /app/static/;
+    }
+
+    location /media/ {
+        alias /app/media/;
+    }
+
+}

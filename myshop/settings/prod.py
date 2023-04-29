@@ -16,6 +16,8 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 ALLOWED_HOSTS = ["127.0.0.1", "localhost", "*"]
 
 
+WSGI_APPLICATION = "myshop.wsgi.application"
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",

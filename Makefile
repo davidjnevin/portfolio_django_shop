@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 DOCKER_COMPOSE=docker compose
-DOCKER_ENVIRONMENT=docker-compose-dev.yml
+DOCKER_ENVIRONMENT=docker-compose-prod.yml
 PRE_RUN_API_COMMAND=${DOCKER_COMPOSE} -f ${DOCKER_ENVIRONMENT} run --rm shop
 PACKAGE_NAME=myshop
 VENV_FOLDER=venv
